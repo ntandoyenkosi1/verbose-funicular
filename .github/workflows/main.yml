@@ -1,4 +1,4 @@
-name: DevSecOps Pipeline: Static Analysis | Dependency Scanning | Docker Scan
+name: DevSecOps Pipeline
 
 on:
   push:
