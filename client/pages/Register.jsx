@@ -11,7 +11,18 @@ const Register = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
+  // Whitelist only alphanumeric characters (0-9)
+  const alphanumericRegex = /^[0-9]*$/;
 
+  const handleIDChange = (e) => {
+    const nextValue = e.target.value;
+    
+    // Whitelisting logic: Only update state if the new string matches the regex
+    if (alphanumericRegex.test(nextValue)) {
+      setFormData({ ...formData, [e.target.name]: nextValue });
+    }
+  }
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevents the form from reloading when pressing the submit button
     try {
@@ -47,7 +58,7 @@ const Register = () => {
       <h2>Create Account</h2>
       <form onSubmit={handleSubmit}>
         <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} required /><br />
-        <input type="text" name="idNumber" placeholder="ID Number" onChange={handleChange} required /><br />
+        <input type="text" name="idNumber" placeholder="ID Number" onChange={handleIDChange} required /><br />
         <input type="text" name="accountNumber" placeholder="Account Number" onChange={handleChange} required /><br />
         <input type="password" name="password" placeholder="Password" onChange={handleChange} required /><br />
         <button type="submit">Register</button>
