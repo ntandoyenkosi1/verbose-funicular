@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = 5000;
+require("dotenv").config() // enables environment variables access in a Node enviroment: process.env.*
+const PORT = process.env.PORT || 5000; // In production, the PORT is always provided by the deployment platform
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs")
 app.use(cors());
 app.use(express.json());
+const path = require('path');
 // Update this connection string with your MongoDB URI
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/portal_db';
 // --- Database Connection ---
@@ -24,6 +26,8 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
+// 1. Serve the static files from the React build
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Sample API route
 app.get('/api/message', (req, res) => {
@@ -105,7 +109,10 @@ app.get('/api/portal/view', async (req, res) => {
 app.post('/api/login/pay', async (req, res) => {
   // Not Implemented yet
 })
-
+// This sends the React index.html for any request that isn't an API call
+app.get(/(.*)/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('Successfully connected to MongoDB')
