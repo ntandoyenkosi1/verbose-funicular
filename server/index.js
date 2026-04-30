@@ -8,6 +8,9 @@ const bcrypt = require("bcryptjs")
 app.use(cors());
 app.use(express.json());
 const path = require('path');
+const ExpressBrute = require('express-brute');
+const store = new ExpressBrute.MemoryStore();
+const bruteforce = new ExpressBrute(store);
 // Update this connection string with your MongoDB URI
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/portal_db';
 // --- Database Connection ---
@@ -76,7 +79,7 @@ app.post('/api/register', async (req, res) => {
  * Method: POST
  * URL: http://localhost:3000/api/login
  */
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', bruteforce.prevent, async (req, res) => {
   /**
    * @TODO Retrieve the details from the request body
    */
