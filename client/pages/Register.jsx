@@ -1,69 +1,163 @@
-import React, { useState } from 'react';
+"use client"
 
-const Register = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    idNumber: '',
-    accountNumber: '',
-    password: ''
-  });
+import { useState } from "react"
+import styles from "./auth.module.css"
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  
-  // Whitelist only alphanumeric characters (0-9)
-  const alphanumericRegex = /^[0-9]*$/;
+export function Register({ onRegister, onSwitchToLogin }) {
+  const [fullName, setFullName] = useState("")
+  const [accountNumber, setAccountNumber] = useState("")
+  const [idNumber, setIdNumber] = useState("")
+  const [password, setPassword] = useState("")
+  const [loginMessage, setMessage]=useState("No message yet")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
 
-  const handleIDChange = (e) => {
-    const nextValue = e.target.value;
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setError("")
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters")
+      return
+    }
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      "fullName": fullName,
+      "idNumber": idNumber,
+      "accountNumber": accountNumber,
+      "password":password
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow"
+    };
+
+    fetch("http://localhost:5189/api/register", requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setMessage(result.message)
+      })
+      .catch((error) => console.error(error));
+
     
-    // Whitelisting logic: Only update state if the new string matches the regex
-    if (alphanumericRegex.test(nextValue)) {
-      setFormData({ ...formData, [e.target.name]: nextValue });
-    }
   }
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // prevents the form from reloading when pressing the submit button
-    try {
-      // We will add the code for sending data to the backend here
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
 
-      const raw = JSON.stringify({
-        "fullName": formData.fullName,
-        "idNumber": formData.idNumber,
-        "accountNumber": formData.accountNumber,
-        "password": formData.password
-      });
-
-      const requestOptions = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-      };
-
-      fetch("/api/register", requestOptions)
-        .then((response) => response.json())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
-    } catch (error) {
-      console.error('Error registering:', error);
-      alert('Registration failed.');
-    }
-  };
   return (
-    <div style={{ maxWidth: '400px', margin: 'auto', padding: '20px' }}>
-      <h2>Create Account</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="fullName" placeholder="Full Name" onChange={handleChange} required /><br />
-        <input type="text" name="idNumber" placeholder="ID Number" onChange={handleIDChange} required /><br />
-        <input type="text" name="accountNumber" placeholder="Account Number" onChange={handleChange} required /><br />
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required /><br />
-        <button type="submit">Register</button>
-      </form>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Create Account</h2>
+        <p className={styles.subtitle}>Sign up to get started</p>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+
+          {/* Full Name Field */}
+          <div className={styles.field}>
+            <label htmlFor="fullName" className={styles.label}>
+              Full Name
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className={styles.input}
+              placeholder="John Doe"
+              required
+            />
+          </div>
+
+          {/* Account Number Field */}
+          <div className={styles.field}>
+            <label htmlFor="accountNumber" className={styles.label}>
+              Account Number
+            </label>
+            <input
+              id="accountNumber"
+              type="text"
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(e.target.value)}
+              className={styles.input}
+              placeholder="1234567890"
+              required
+            />
+          </div>
+
+          {/* ID Number Field */}
+          <div className={styles.field}>
+            <label htmlFor="idNumber" className={styles.label}>
+              ID Number
+            </label>
+            <input
+              id="idNumber"
+              type="text"
+              value={idNumber}
+              onChange={(e) => setIdNumber(e.target.value)}
+              className={styles.input}
+              placeholder="A1234567B"
+              required
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className={styles.field}>
+            <label htmlFor="password" className={styles.label}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={styles.input}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className={styles.field}>
+            <label htmlFor="confirmPassword" className={styles.label}>
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={styles.input}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <button type="submit" className={styles.button}>
+            Register
+          </button>
+        </form>
+
+        <p className={styles.footer}>
+          Already have an account?{" "}
+          <button onClick={onSwitchToLogin} className={styles.link}>
+            Sign in
+          </button>
+        </p>
+        <p className={styles.footer}>
+          Login Message: {loginMessage}
+        </p>
+      </div>
     </div>
-  );
-};
-export default Register;
+  )
+}

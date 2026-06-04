@@ -1,0 +1,57 @@
+version: 2.1
+
+jobs:
+  build_app:
+    working_directory: ~/build  
+    docker:
+      - image: cimg/node:20.6.0
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: |
+            # We use local installs (without sudo) in CI for better caching and speed
+            npm install
+            cd server && npm install
+      - persist_to_workspace:
+          root: ~/build
+          paths:
+            - .
+
+  sonarqube:
+    working_directory: ~/build
+    docker:
+      - image: sonarsource/sonar-scanner-cli
+    resource_class: small
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/build
+      - run:
+          name: Analyze Code Quality & Security
+          command: |
+            SONAR_BRANCH="${CIRCLE_BRANCH:-master}"
+            sonar-scanner \
+              -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+              -Dsonar.organization="$SONAR_ORG" \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login="$SONAR_TOKEN" \
+              -Dsonar.branch.name="$SONAR_BRANCH" \
+              -Dsonar.sources=. \
+              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+              -Dsonar.exclusions="**/node_modules/**,**/public/**,**/android/**,**/ios/**" \
+              -Dsonar.cpd.exclusions="**/test/**"
+              
+workflows:
+  say-hello-workflow:
+    jobs:
+      - build_app
+      - sonarqube:
+          requires:
+            - build_app  # Ensures we don't scan code that fails to build
+          filters:
+            branches:
+              only: 
+                - main
+                - master
+                - develop

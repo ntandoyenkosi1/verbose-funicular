@@ -16,6 +16,9 @@ function App() {
       <NavLink to="/register" end>
         Register
       </NavLink>
+      <NavLink to="/login" end>
+        Login
+      </NavLink>
       <h1>React + Express</h1>
       <p>Server says: <strong>{data || 'Loading...'}</strong></p>
     </div>
