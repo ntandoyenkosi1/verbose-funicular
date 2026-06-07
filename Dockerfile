@@ -16,7 +16,7 @@ WORKDIR /app
 COPY --from=build-stage /app/server ./server
 COPY --from=build-stage /app/package.json ./package.json
 
-RUN npm install --prefix server --production
+RUN npm install --prefix server --production --legacy-peer-deps
 
 EXPOSE 5000
 CMD ["npm", "run", "start"]
